@@ -1,116 +1,154 @@
-# OrderFlow
+# LifePulse Backend
 
-OrderFlow is the portfolio-facing packaging of a Java Spring Boot order-processing backend built from an existing takeout-domain codebase. The goal is to present the project as a reusable backend system for order lifecycle management, inventory consistency, payment status handling, and operational workflows.
+Java Spring Boot backend for local-services discovery, voucher purchasing, and flash-sale ordering under high read traffic.
 
-## Overview
+## Business Problem
 
-This repository originally contained course-oriented material around a takeout application. For software engineering recruiting, especially `Amazon SDE Intern`, the project is now framed as an order-processing system with stronger emphasis on:
+Local-services platforms need to support merchant browsing, voucher discovery, order creation, and promotional flash-sale traffic without overwhelming the database or overselling inventory. LifePulse focuses on the backend systems behind that experience: API design, caching, concurrency control, and reliable order workflows.
 
-- REST APIs
-- layered backend architecture
-- order state transitions
-- inventory and payment coordination
-- persistence and mapper structure
-- caching and reliability roadmap
-- reproducible local development
+This repository rebuilds an existing Java takeout-domain codebase into a portfolio-facing backend systems project.
 
-The original domain model is still useful because it already contains the core business entities needed for a realistic transactional backend.
+## Product Scope
 
-## Architecture
+LifePulse models a local living platform with:
 
-The current repository uses a modular Java structure at the repo root:
+- merchant and shop discovery
+- item and voucher browsing
+- user authentication
+- order creation and status tracking
+- flash-sale purchase flows
+- AI-assisted merchant workflows as an extension point
 
-- `sky-common`: shared infrastructure, utilities, interceptors, and configuration helpers
-- `sky-pojo`: entities, DTOs, and VOs for order, user, dish, category, and related business data
-- `sky-server`: Spring Boot application, mappers, configuration, and runtime entrypoint
+## Current Codebase
 
-Portfolio-facing target architecture:
+The current repository is a multi-module Spring Boot project:
 
-- `api`: REST controllers, request validation, global exception handling
-- `service`: order orchestration, inventory coordination, payment status transitions, notification hooks
-- `domain`: order, inventory, payment, and user lifecycle concepts
-- `persistence`: MySQL-backed mapper and repository layer
-- `cache`: Redis-backed hot data and idempotency support
-- `infra`: logging, async tasks, configuration, and local container setup
+- `sky-common`: shared utilities, interceptors, configuration helpers, and infrastructure code
+- `sky-pojo`: entities, DTOs, and VOs for user, shop, category, dish, order, and related objects
+- `sky-server`: Spring Boot runtime, controllers, mappers, configuration, and application entrypoint
+
+The next rebuild pass will gradually rename and package the public narrative around LifePulse while preserving useful Java backend implementation pieces.
+
+## Target Architecture
+
+```text
+client / API caller
+        |
+        v
+Spring MVC controllers
+        |
+        v
+service layer
+  - merchant discovery
+  - voucher purchase
+  - order lifecycle
+  - flash-sale validation
+        |
+        v
+persistence + cache
+  - MySQL / MyBatis
+  - Caffeine local cache
+  - Redis distributed cache
+        |
+        v
+concurrency controls
+  - Bloom filters
+  - cache-aside strategy
+  - Redis Lua scripts
+  - Redisson locks
+```
 
 ## Tech Stack
 
 - Java
 - Spring Boot
+- Spring MVC
 - MyBatis
 - MySQL
 - Redis
-- Docker / Docker Compose
-- JUnit 5
-- GitHub Actions
+- Caffeine
+- Redisson
+- Redis Lua
+- Nginx
+- JWT
+- JMeter
+- Docker / Docker Compose planned
 
-## Core Workflows
+## Backend Focus Areas
 
-### Order lifecycle
+### Multi-level caching
 
-- create order
-- validate items and pricing
-- persist order and order details
-- transition status across processing steps
+- Caffeine for hot local reads.
+- Redis for shared cache across application instances.
+- Cache-aside strategy for predictable invalidation.
+- Bloom filters to reduce penetration from invalid keys.
 
-### Inventory consistency
+### Flash-sale concurrency
 
-- reserve or validate availability before submission
-- update stock-related state during order flow
-- expose operational queries for follow-up actions
+- Redis Lua scripts for atomic stock and user checks.
+- Redisson locks for distributed mutual exclusion where needed.
+- One-order-per-user protection.
+- Oversell prevention during concurrent purchase attempts.
 
-### Payment status update
+### Order workflow
 
-- receive payment-related state changes
-- map them into order status transitions
-- prepare the system for asynchronous handling and retries
+- Order creation and status transitions.
+- Persistence through MyBatis mappers.
+- Structured service layer for business rules.
+- Roadmap for async order processing and retryable status updates.
 
-## API Endpoints
+## Planned Metrics
 
-The existing codebase already contains rich backend endpoints in the `sky-server` module. The next packaging step is to standardize the public-facing examples around:
+Only measured metrics should be used in resumes or public claims. Current target metrics to verify:
 
-- order submission
-- order query and status update
-- cart and checkout flow
-- operational reporting endpoints
+- cache hit rate under repeated read traffic
+- DB read reduction after Caffeine + Redis caching
+- QPS under JMeter flash-sale load
+- p95 latency during concurrent purchase tests
+- oversell count under stress tests
 
 ## Local Setup
 
-Current local project root:
+From the repository root:
 
-```bash
-cd orderflow
-```
-
-Typical backend workflow:
-
-```bash
+```sh
 mvn -DskipTests install
 cd sky-server
 mvn spring-boot:run
 ```
 
-The repository also includes environment-specific configuration under `sky-server/src/main/resources`.
+The repository includes environment-specific configuration under:
 
-## Testing
+```text
+sky-server/src/main/resources
+```
 
-Packaging goal for the next stage:
+## Rebuild Roadmap
 
-- add service-level tests for order lifecycle logic
-- add API-level tests for critical request flows
-- document reliability-oriented edge cases such as duplicate submission and failed status transitions
+### Phase 1: Portfolio Packaging
 
-## Roadmap
+- Rename public README and docs from OrderFlow to LifePulse.
+- Document the real module structure and existing run path.
+- Add API examples for merchant, voucher, and order flows.
 
-1. Standardize the project naming across docs and portfolio pages
-2. Add example API requests and architecture diagrams
-3. Introduce idempotent submission and clearer async status handling
-4. Add Redis-backed caching and structured test coverage
-5. Publish a cleaner local demo and deployment story
+### Phase 2: Caching and Concurrency
 
-## Supporting Docs
+- Add or verify Redis cache flows.
+- Add JMeter load-test scenarios.
+- Document cache hit rate, DB read reduction, QPS, and p95 latency.
+- Add failure cases for duplicate orders and oversell prevention.
 
-- [OrderFlow packaging notes](./docs/orderflow-overview.md)
-- Public repository: [cassieliang6709/orderflow](https://github.com/cassieliang6709/orderflow)
-- Upstream base repository: [shuhongfan/sky-take-out](https://github.com/shuhongfan/sky-take-out)
-- legacy course materials remain in the repo for reference, but the portfolio narrative should prioritize backend systems engineering
+### Phase 3: Reliability Polish
+
+- Add service-level tests for critical workflows.
+- Add Docker Compose for MySQL and Redis.
+- Add CI checks.
+- Add architecture diagram and demo screenshots.
+
+## Interview Narrative
+
+LifePulse demonstrates Java backend fundamentals for SDE interviews: layered Spring Boot architecture, MyBatis persistence, Redis caching, flash-sale concurrency, Lua-based atomic operations, and load-test-driven performance discussion.
+
+## Repository Note
+
+This project is being rebuilt from the earlier `orderflow` repository. The old name may still appear in module names or supporting docs while the portfolio packaging is updated.
