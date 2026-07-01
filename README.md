@@ -109,12 +109,25 @@ Only measured metrics should be used in resumes or public claims. Current target
 
 ## Local Setup
 
+Use JDK 17 for this project. The Maven compiler target is Java 17, and local
+verification currently passes with Homebrew `openjdk@17`. Newer JDKs can fail
+because the Spring Boot / Lombok toolchain in this rebuild is pinned to the
+Java 17 era.
+
 From the repository root:
 
 ```sh
 mvn -DskipTests install
 cd sky-server
 mvn spring-boot:run
+```
+
+On this machine, the verified command is:
+
+```sh
+JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home \
+PATH="$JAVA_HOME/bin:$PATH" \
+mvn -DskipTests install
 ```
 
 The repository includes environment-specific configuration under:
